@@ -31,6 +31,14 @@ def pick(paragraphs, select, k):
     """
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    i = 0
+    while i < len(paragraphs):
+        if select(paragraphs[i]):
+            if k == 0:
+                return paragraphs[i]
+            k -= 1
+        i += 1
+    return ''
     # END PROBLEM 1
 
 
@@ -50,6 +58,14 @@ def about(subject):
     assert all([lower(x) == x for x in subject]), 'subjects should be lowercase.'
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    def subject_in_paragraph(paragraph):
+        i = 0
+        while i < len(subject):
+            if subject[i] in split(lower(remove_punctuation(paragraph))):
+                return True
+            i += 1
+        return False 
+    return subject_in_paragraph
     # END PROBLEM 2
 
 
@@ -80,6 +96,21 @@ def accuracy(typed, source):
     source_words = split(source)
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    len_typed = len(typed_words)
+    len_source = len(source_words)
+    if len_typed == 0:
+        if len_source == 0:
+            return 100.0
+        return 0.0
+    
+    right_num = 0
+    index = 0
+    while index < min(len_source, len_typed):
+        if typed_words[index] == source_words[index]:
+            right_num += 1
+        index += 1
+    right_num *= 100
+    return right_num / len_typed
     # END PROBLEM 3
 
 
@@ -98,6 +129,7 @@ def wpm(typed, elapsed):
     assert elapsed > 0, 'Elapsed time must be positive'
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    return len(typed) / 5 * 60 / elapsed
     # END PROBLEM 4
 
 
@@ -127,6 +159,14 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     """
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    min_diff = limit + 1
+    closest_word = ""
+    for word in word_list:
+        diff = diff_function(typed_word, word, limit)
+        if diff < min_diff:
+            min_diff = diff
+            closest_word = word
+    return typed_word if min_diff > limit or typed_word in word_list else closest_word
     # END PROBLEM 5
 
 
@@ -153,7 +193,15 @@ def feline_fixes(typed, source, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    #assert False, 'Remove this line'
+    if typed == source:
+        return 0
+    if limit == 0 or typed == "" or source == "":
+        return max(len(source), len(typed))
+
+    if typed[0] == source[0]:
+        return feline_fixes(typed[1:], source[1:], limit)
+    return 1 + feline_fixes(typed[1:], source[1:], limit - 1) 
     # END PROBLEM 6
 
 
@@ -177,29 +225,75 @@ def minimum_mewtations(typed, source, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
-    if ___________: # Base cases should go here, you may add more base cases as needed.
+    #assert False, 'Remove this line'
+    if typed == source: # Base cases should go here, you may add more base cases as needed.
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return 0
         # END
     # Recursive cases should go below here
-    if ___________: # Feel free to remove or add additional cases
+    if limit == 0 or typed == "" or source == "": # Feel free to remove or add additional cases
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return max(len(source), len(typed))
         # END
+    if typed[0] == source[0]:
+        return minimum_mewtations(typed[1:], source[1:], limit)
     else:
-        add = ... # Fill in these lines
-        remove = ...
-        substitute = ...
+        add = minimum_mewtations(typed, source[1:], limit - 1) # Fill in these lines
+        remove = minimum_mewtations(typed[1:], source, limit - 1)
+        substitute = minimum_mewtations(typed[1:], source[1:], limit - 1)
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return min(add, remove, substitute) + 1
         # END
 
 
 def final_diff(typed, source, limit):
     """A diff function that takes in a string TYPED, a string SOURCE, and a number LIMIT.
     If you implement this function, it will be used."""
-    assert False, 'Remove this line to use your final_diff function.'
+    #assert False, 'Remove this line to use your final_diff function.'
+    if typed == source: # Base cases should go here, you may add more base cases as needed.
+        # BEGIN
+        "*** YOUR CODE HERE ***"
+        return 0
+        # END
+    ###开头结尾相等
+    if typed[0:3] == source[0:3]:
+        return final_diff(typed[3:], source[3:], limit)
+    if typed[-3:] == source[-3:]:
+        return final_diff(typed[:-3], source[:-3], limit)
+    ###相邻互换
+    if len(typed) >= 2 and len(source) >= 2:
+        if typed[0] == source[1] and typed[1] == source[0]:
+            return final_diff(typed[2:], source[2:], limit - 1) + 1
+    ###中间漏了
+    #   fixed
+    #       Incorrect: (fixd -> fix)
+    if len(typed) >= 2 and len(source) >= 3:
+        if typed[0] == source[0] and typed[1] == source[2]:
+            return final_diff(typed[2:], source[3:], limit - 1) + 1
+    ###中间多了
+    if len(typed) >= 3 and len(source) >= 2:
+        if typed[0] == source[0] and typed[2] == source[1]:
+            return final_diff(typed[3:], source[2:], limit - 1) + 1
+    ###
+    # Recursive cases should go below here
+    if limit == 0 or typed == "" or source == "": # Feel free to remove or add additional cases
+        # BEGIN
+        "*** YOUR CODE HERE ***"
+        return max(len(source), len(typed))
+        # END
+    if typed[0] == source[0]:
+        return minimum_mewtations(typed[1:], source[1:], limit)
+    else:
+        add = minimum_mewtations(typed, source[1:], limit - 1) # Fill in these lines
+        remove = minimum_mewtations(typed[1:], source, limit - 1)
+        substitute = minimum_mewtations(typed[1:], source[1:], limit - 1)
+        # BEGIN
+        "*** YOUR CODE HERE ***"
+        return min(add, remove, substitute) + 1
+        # END
 
 FINAL_DIFF_LIMIT = 6 # REPLACE THIS WITH YOUR LIMIT
 
@@ -234,6 +328,16 @@ def report_progress(typed, source, user_id, upload):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    index, correct_word = 0, 0
+    while index < len(typed):
+        if typed[index] != source[index]:
+            ratio = correct_word / len(source)
+            break 
+        index += 1
+        correct_word += 1
+    ratio = correct_word / len(source)
+    upload({'id': user_id, 'progress': ratio})
+    print(ratio)
     # END PROBLEM 8
 
 
@@ -256,6 +360,10 @@ def time_per_word(words, timestamps_per_player):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    # time_0 = [timestamps_per_player[0][k + 1] - timestamps_per_player[0][k] for k in range(len(words))]
+    # time_1 = [timestamps_per_player[1][k + 1] - timestamps_per_player[1][k] for k in range(len(words))]
+    # return match(words, [time_0, time_1])
+    return match(words, [[timestamps_per_player[p][k + 1] - timestamps_per_player[p][k] for k in range(len(words))] for p in range(len(timestamps_per_player))])
     # END PROBLEM 9
 
 
@@ -278,6 +386,16 @@ def fastest_words(match):
     word_indices = range(len(get_all_words(match)))    # contains an *index* for each word
     # BEGIN PROBLEM 10
     "*** YOUR CODE HERE ***"
+    words = [[] for _ in player_indices]
+    for word in word_indices:
+        fast_player, best_score = 0, time(match, 0, word)
+        for player in player_indices:
+            score = time(match, player, word)
+            if score < best_score:
+                fast_player = player
+                best_score = score
+        words[fast_player].append(get_word(match, word))
+    return words
     # END PROBLEM 10
 
 
